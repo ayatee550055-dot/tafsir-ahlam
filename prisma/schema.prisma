@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DreamSymbol {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String   @unique
+  category         String
+  imageUrl         String?
+  shortDesc        String
+  ibnSirin         String?  @db.Text
+  nabulsi          String?  @db.Text
+  ibnShaheen       String?  @db.Text
+  
+  // Detailed specific interpretations
+  forSingle        String?  @db.Text
+  forMarried       String?  @db.Text
+  forPregnant      String?  @db.Text
+  forDivorced      String?  @db.Text
+  forSingleMan     String?  @db.Text
+  forMarriedMan    String?  @db.Text
+  goodOmens        String?  @db.Text
+  badOmens         String?  @db.Text
+
+  searchCount      Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Variations relation
+  variations       SymbolVariation[]
+  
+  // FAQs relation
+  faqs             SymbolFaq[]
+  
+  // SEO fields
+  metaTitle        String?
+  metaDescription  String?
+}
+
+model SymbolVariation {
+  id               String   @id @default(cuid())
+  symbolId         String
+  symbol           DreamSymbol @relation(fields: [symbolId], references: [id], onDelete: Cascade)
+  title            String
+  content          String   @db.Text
+}
+
+model SymbolFaq {
+  id               String   @id @default(cuid())
+  symbolId         String
+  symbol           DreamSymbol @relation(fields: [symbolId], references: [id], onDelete: Cascade)
+  question         String
+  answer           String   @db.Text
+}
+
+// We kept Interpretation model in case we need history or other logging later.
+model Interpretation {
+  id               String   @id @default(cuid())
+  dreamText        String   @db.Text
+  overallInterpretation String @db.Text
+  createdAt        DateTime @default(now())
+}
+
+model Settings {
+  id               String   @id @default("default")
+  siteName         String   @default("آية لتفسير الأحلام")
+  siteDescription  String   @db.Text
+  googleAnalyticsId String?
+  adsenseClientId  String?
+  updatedAt        DateTime @updatedAt
+}
